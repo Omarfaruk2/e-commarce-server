@@ -51,7 +51,6 @@ async function run() {
         })
 
         app.get("/item", async (req, res) => {
-            // const name = req.params.name
             const query = {}
             const cursor = itemscollection.find(query)
             const result = await cursor.toArray()
