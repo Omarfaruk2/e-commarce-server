@@ -1,6 +1,6 @@
 const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
-
+const jwt = require('jsonwebtoken')
 const cors = require('cors')
 require('dotenv').config()
 
@@ -15,12 +15,31 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 
+function verifyJWT(req, res, next) {
+    const authHeaders = req.headers.authorization
+    if (!authHeaders) {
+        return res.status(401).send({ message: "Unauthorized access" })
+    }
+    const token = authHeaders.split(' ')[1]
+    // verify a token symmetric
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: "Forbidden Access" })
+        }
+        req.decoded = decoded
+        next()
+    })
+}
+
+
 
 async function run() {
     try {
         await client.connect()
         const mobileCollection = client.db("device").collection("mobile")
         const itemscollection = client.db("device").collection("item")
+        const userCollection = client.db("MadeEasy").collection("users")
+
 
         app.get('/inventory', async (req, res) => {
             const query = {}
@@ -99,6 +118,54 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
+
+
+        // all user
+        app.put("/user/:email", async (req, res) => {
+            const email = req.params.email
+            const user = req.body
+            const filter = { email: email }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: user
+            }
+            const result = await userCollection.updateOne(filter, updateDoc, options)
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+            // console.log(token)
+            res.send({ result, token })
+
+        })
+
+        app.get("/user", async (req, res) => {
+            const query = {}
+            const cursor = userCollection.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
+
+        // admin----------------------------------------
+        app.put("/user/admin/:email", async (req, res) => {
+            const email = req.params.email
+            // const requester = req.decoded.email
+            // const requesterAccount = await userCollection.findOne({ email: email })
+            const filter = { email: email }
+            const updateDoc = {
+                $set: { role: "admin" },
+            }
+            const result = await userCollection.updateOne(filter, updateDoc)
+            res.send(result)
+
+        })
+
+        // remove user
+        app.delete("/user/:id", async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await userCollection.deleteOne(query)
+            res.send(result)
+        })
+
 
 
         // // // Add Items prodects
