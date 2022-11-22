@@ -39,6 +39,7 @@ async function run() {
         const mobileCollection = client.db("device").collection("mobile")
         const itemscollection = client.db("device").collection("item")
         const userCollection = client.db("MadeEasy").collection("users")
+        const myorderCollection = client.db("MadeEasy").collection("myorders")
 
 
         app.get('/inventory', async (req, res) => {
@@ -55,26 +56,44 @@ async function run() {
             res.send(result)
         })
 
-        app.post("/item/:name", async (req, res) => {
+        app.post("/item/:categoryName", async (req, res) => {
             const newUser = req.body
             const result = await itemscollection.insertOne(newUser)
             res.send(result)
         })
 
-        app.get("/item/:name", async (req, res) => {
-            const name = req.params.name
-            const query = { name: name }
+        app.get("/item/:categoryName", async (req, res) => {
+            const categoryName = req.params.categoryName
+            const query = { categoryName: categoryName }
             const cursor = itemscollection.find(query)
             const result = await cursor.toArray()
             res.send(result)
         })
+        // -----------------------------------
+        app.get("/itemquery", async (req, res) => {
+            const sellerEmail = req.query.email
+            const query = { sellerEmail: sellerEmail }
+            const result = await itemscollection.find(query).toArray()
+            return res.send(result)
 
+        })
+
+        // --------------------------------------------------------
         app.get("/item", async (req, res) => {
             const query = {}
             const cursor = itemscollection.find(query)
             const result = await cursor.toArray()
             res.send(result)
         })
+        // ------------------------------------------------------------------------------------------------
+        // app.get("/item/:email", async (req, res) => {
+        //     const email = req.params.email
+        //     const query = { email: email }
+        //     const cursor = itemscollection.find(query)
+        //     const result = await cursor.toArray()
+        //     res.send(result)
+        // })
+        // ------------------------------------------------------------------------------------------------
 
         app.post("/item", async (req, res) => {
             const newUser = req.body
@@ -93,7 +112,7 @@ async function run() {
         // details item
         app.get("/item/:id", async (req, res) => {
             const id = req.params.id
-            console.log(id)
+            // console.log(id)
             const query = { _id: ObjectId(id) }
             const result = await itemscollection.findOne(query)
             res.send(result)
@@ -109,11 +128,11 @@ async function run() {
         //     res.send(result)
         // })
 
-        app.get("/item/:name/:id", async (req, res) => {
-            const name = req.params.name
+        app.get("/item/:categoryName/:id", async (req, res) => {
+            const categoryName = req.params.categoryName
             const id = req.params.id
-            console.log(name, id)
-            const query = { name: name, _id: ObjectId(id) }
+            // console.log(name, id)
+            const query = { categoryName: categoryName, _id: ObjectId(id) }
             const cursor = itemscollection.find(query)
             const result = await cursor.toArray()
             res.send(result)
@@ -147,8 +166,6 @@ async function run() {
         // admin----------------------------------------
         app.put("/user/admin/:email", async (req, res) => {
             const email = req.params.email
-            // const requester = req.decoded.email
-            // const requesterAccount = await userCollection.findOne({ email: email })
             const filter = { email: email }
             const updateDoc = {
                 $set: { role: "admin" },
@@ -157,6 +174,22 @@ async function run() {
             res.send(result)
 
         })
+
+
+        app.get("/admin/:email", async (req, res) => {
+            const email = req.params.email
+            const user = await userCollection.findOne({ email: email })
+            const isAdmin = user.role === "admin"
+            res.send(({ admin: isAdmin }))
+        })
+
+        app.get("/seller/:email", async (req, res) => {
+            const email = req.params.email
+            const user = await userCollection.findOne({ email: email })
+            const isseller = user.role === "seller"
+            res.send(({ seller: isseller }))
+        })
+
 
         // remove user
         app.delete("/user/:id", async (req, res) => {
@@ -167,13 +200,29 @@ async function run() {
         })
 
 
+        // // all order
+        app.post('/myorders', async (req, res) => {
+            const newItem = req.body
+            const result = await myorderCollection.insertOne(newItem)
+            res.send(result)
+        })
 
-        // // // Add Items prodects
-        // app.post('/inventory', async (req, res) => {
-        //     const newItem = req.body
-        //     const result = await mobileCollection.insertOne(newItem)
-        //     res.send(result)
-        // })
+        app.get("/allorders", async (req, res) => {
+            const query = {}
+            const cursor = myorderCollection.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
+        app.get("/myorders", async (req, res) => {
+            const buyingEmail = req.query.email
+            const query = { buyingEmail: buyingEmail }
+            const cursor = myorderCollection.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
+
 
         // // details item
         // app.get('/inventory/:id', async (req, res) => {
