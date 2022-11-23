@@ -40,6 +40,7 @@ async function run() {
         const itemscollection = client.db("device").collection("item")
         const userCollection = client.db("MadeEasy").collection("users")
         const myorderCollection = client.db("MadeEasy").collection("myorders")
+        const catagorilistCollection = client.db("MadeEasy").collection("catagorilist")
 
 
         app.get('/inventory', async (req, res) => {
@@ -48,6 +49,31 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
+
+        app.get('/catagorilist', async (req, res) => {
+            const query = {}
+            const cursor = catagorilistCollection.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
+        app.post("/catagorilist", async (req, res) => {
+            const newCatagori = req.body
+            const result = await catagorilistCollection.insertOne(newCatagori)
+            res.send(result)
+        })
+
+
+        // deleted itemms
+        app.delete("/catagorilist/:id", async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await catagorilistCollection.deleteOne(query)
+            res.send(result)
+        })
+
+
+
 
         app.get('/db', async (req, res) => {
             const query = {}
@@ -85,16 +111,6 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
-        // ------------------------------------------------------------------------------------------------
-        // app.get("/item/:email", async (req, res) => {
-        //     const email = req.params.email
-        //     const query = { email: email }
-        //     const cursor = itemscollection.find(query)
-        //     const result = await cursor.toArray()
-        //     res.send(result)
-        // })
-        // ------------------------------------------------------------------------------------------------
-
         app.post("/item", async (req, res) => {
             const newUser = req.body
             const result = await itemscollection.insertOne(newUser)
@@ -179,14 +195,14 @@ async function run() {
         app.get("/admin/:email", async (req, res) => {
             const email = req.params.email
             const user = await userCollection.findOne({ email: email })
-            const isAdmin = user.role === "admin"
+            const isAdmin = user?.role === "admin"
             res.send(({ admin: isAdmin }))
         })
 
         app.get("/seller/:email", async (req, res) => {
             const email = req.params.email
             const user = await userCollection.findOne({ email: email })
-            const isseller = user.role === "seller"
+            const isseller = user?.role === "seller"
             res.send(({ seller: isseller }))
         })
 
@@ -213,6 +229,18 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
+
+        // deleted order
+        app.delete("/allorders/:id", async (req, res) => {
+            const id = req.params.id
+            const query = { _id: ObjectId(id) }
+            const result = await myorderCollection.deleteOne(query)
+            res.send(result)
+        })
+
+
+
+
 
         app.get("/myorders", async (req, res) => {
             const buyingEmail = req.query.email
