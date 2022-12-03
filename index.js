@@ -103,6 +103,14 @@ async function run() {
             return res.send(result)
 
         })
+        // -----------------------------------
+        app.get("/sellerOrder", async (req, res) => {
+            const sellerEmailbackend = req.query.email
+            const query = { sellerEmailbackend: sellerEmailbackend }
+            const result = await itemscollection.find(query).toArray()
+            return res.send(result)
+
+        })
 
         // --------------------------------------------------------
         app.get("/item", async (req, res) => {
@@ -134,16 +142,7 @@ async function run() {
             res.send(result)
         })
 
-        // app.get("/item/:name/:id", async (req, res) => {
-        //     const name = req.params.name
-        //     const id = req.params.id
-        //     console.log(id)
-        //     const query = { _id: ObjectId(id) }
-        //     const cursor = itemscollection.find(query)
-        //     const result = await cursor.toArray()
-        //     res.send(result)
-        // })
-
+        // Get Category with Id 
         app.get("/item/:categoryName/:id", async (req, res) => {
             const categoryName = req.params.categoryName
             const id = req.params.id
@@ -191,7 +190,6 @@ async function run() {
 
         })
 
-
         app.get("/admin/:email", async (req, res) => {
             const email = req.params.email
             const user = await userCollection.findOne({ email: email })
@@ -238,10 +236,7 @@ async function run() {
             res.send(result)
         })
 
-
-
-
-
+        // get my orders
         app.get("/myorders", async (req, res) => {
             const buyingEmail = req.query.email
             const query = { buyingEmail: buyingEmail }
@@ -251,71 +246,12 @@ async function run() {
         })
 
 
-
-        // // details item
-        // app.get('/inventory/:id', async (req, res) => {
-        //     const id = req.params.id
-        //     const query = { _id: ObjectId(id) }
-        //     const result = await mobileCollection.findOne(query)
-        //     res.send(result)
-        // })
-        // // delevered items
-        // app.put("/inventory/:id", async (req, res) => {
-        //     const id = req.params.id
-        //     const updatedUser = req.body
-        //     const filter = { _id: ObjectId(id) }
-        //     const options = { upsert: true }
-        //     const updateDoc = {
-        //         $set: updatedUser
-        //     }
-        //     const result = await mobileCollection.updateOne(filter, updateDoc, options)
-        //     res.send(result)
-        // })
-
-        // app.get("/hero", async (req, res) => {
-        //     res.send("Herocu connected")
-        // })
-        // // add Quantity items
-
-        // app.put("/inventory/:id", async (req, res) => {
-        //     const id = req.params.id
-        //     const filter = { _id: ObjectId(id) }
-        //     const updateDoc = {
-        //         $set: {
-        //             quantity: req.body.updateQuantity
-        //         },
-        //     }
-        //     const result = await mobileCollection.updateOne(filter, updateDoc)
-        //     res.send(result)
-        // })
-
-        // // deleted itemms
-        // app.delete("/inventory/:id", async (req, res) => {
-        //     const id = req.params.id
-        //     const query = { _id: ObjectId(id) }
-        //     const result = await mobileCollection.deleteOne(query)
-        //     res.send(result)
-        // })
-
-
-        // // My items
-        // app.get('/myitems', async (req, res) => {
-        //     const email = req.query.email
-        //     const query = { email: email }
-        //     const cursor = mobileCollection.find(query)
-        //     const result = await cursor.toArray()
-        //     res.send(result)
-        // })
-
-
     } finally {
 
     }
 }
 
 run().catch(console.dir)
-
-
 
 // middleware
 app.use(cors())
