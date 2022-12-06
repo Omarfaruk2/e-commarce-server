@@ -103,14 +103,14 @@ async function run() {
             return res.send(result)
 
         })
-        // -----------------------------------
-        app.get("/sellerOrder", async (req, res) => {
-            const sellerEmailbackend = req.query.email
+        // ----------------------------------- Get Seller Order 
+        app.get('/sellerorder/:email', async (req, res) => {
+            const sellerEmailbackend = req.params.email
             const query = { sellerEmailbackend: sellerEmailbackend }
-            const result = await itemscollection.find(query).toArray()
-            return res.send(result)
-
+            const cursor = await myorderCollection.find(query).toArray()
+            res.send(cursor)
         })
+
 
         // --------------------------------------------------------
         app.get("/item", async (req, res) => {
@@ -246,6 +246,9 @@ async function run() {
         })
 
 
+        // get sellerOrder orders
+        // app.get("/ 
+
     } finally {
 
     }
@@ -259,7 +262,7 @@ app.use(express.json())
 
 
 app.get("/", (req, res) => {
-    res.send("Running Genius Server hello")
+    res.send("E-Commerce Server Is Runnig")
 })
 
 app.listen(port, () => {
